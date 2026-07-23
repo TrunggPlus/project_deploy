@@ -1,0 +1,115 @@
+package com.example.demo.controller;
+
+import java.lang.reflect.Type;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import com.example.demo.dto.UserDTO;
+import com.example.demo.entity.User;
+import com.example.demo.repository.UserRepository;
+import com.example.demo.service.BadgeService;
+import com.example.demo.service.UserService;
+import com.example.demo.util.AuthUtils;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+@Controller
+public class ProfileController {
+
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private BadgeService badgeService;
+
+    @GetMapping("/profile")
+    public String showProfile(
+            @RequestParam(value = "id", required = false) Long idParam,
+            Model model) {
+
+        Long targetUserId = idParam;
+
+        // Fallback: If no target user ID is provided in the URL, retrieve the currently
+        // authenticated user
+        if (targetUserId == null) {
+            // Use the centralized AuthUtils to properly extract OAuth2 or Local user
+            // context
+            User currentUser = AuthUtils.getAuthenticatedUser(userRepository);
+
+            if (currentUser != null) {
+                targetUserId = currentUser.getUserId();
+                // Inject the authenticated user back into the Model for Thymeleaf rendering
+                model.addAttribute("loggedInUser", currentUser);
+            }
+        }
+
+        // If the target user cannot be resolved after all checks, redirect to the login
+        // page
+        if (targetUserId == null) {
+            System.err.println("Profile access failed: AuthUtils could not resolve the authenticated user.");
+            return "redirect:/auth/login";
+        }
+
+        // ===== CORE PROFILE RENDERING LOGIC REMAINS UNCHANGED =====
+        try {
+            UserDTO userProfile = userService.getUserProfileById(targetUserId);
+
+            if (userProfile != null) {
+                model.addAttribute("uPro", userProfile);
+                badgeService.checkAndAwardBadges(targetUserId, userProfile.getReputation());
+
+                String jsonLinks = userProfile.getWebsite();
+                if (jsonLinks != null && !jsonLinks.isEmpty()) {
+                    try{
+                    Gson gson = new Gson();
+                    Type type = new TypeToken<Map<String, String>>() {
+                    }.getType();
+                    Map<String, String> linksMap = gson.fromJson(jsonLinks, type);
+                    model.addAttribute("userLinks", linksMap);
+                    } catch (Exception e){
+                         System.err.println("Invalid website JSON for user " + targetUserId);
+                        model.addAttribute("userLinks", Map.of());
+                    }
+                    
+                }
+
+                model.addAttribute("questionsCount", userRepository.countQuestionsByUser(targetUserId));
+                model.addAttribute("answersCount", userRepository.countAnswersByUser(targetUserId));
+                model.addAttribute("viewCount", userRepository.countTotalViewByUser(targetUserId));
+
+                List<Map<String, Object>> goldBadges = userRepository.getBadgesByUserAndType(targetUserId, "gold");
+                List<Map<String, Object>> silverBadges = userRepository.getBadgesByUserAndType(targetUserId, "silver");
+                List<Map<String, Object>> bronzeBadges = userRepository.getBadgesByUserAndType(targetUserId, "bronze");
+
+                model.addAttribute("goldBadges", goldBadges);
+                model.addAttribute("silverBadges", silverBadges);
+                model.addAttribute("bronzeBadges", bronzeBadges);
+
+                int goldCount = goldBadges.stream().mapToInt(b -> ((Number) b.get("badgeCount")).intValue()).sum();
+                int silverCount = silverBadges.stream().mapToInt(b -> ((Number) b.get("badgeCount")).intValue()).sum();
+                int bronzeCount = bronzeBadges.stream().mapToInt(b -> ((Number) b.get("badgeCount")).intValue()).sum();
+
+                model.addAttribute("goldCount", goldCount);
+                model.addAttribute("silverCount", silverCount);
+                model.addAttribute("bronzeCount", bronzeCount);
+                model.addAttribute("totalBadgesCount", goldCount + silverCount + bronzeCount);
+
+                return "User/profile";
+            } else {
+                return "redirect:/home";
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "redirect:/home";
+        }
+    }
+}

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <script>
+        if (localStorage.getItem('devquery-theme') === 'dark') {
+            document.write('<style>body { background-color: #2d3135 !important; }</style>');
+        }
+    </script>
+</head>
+
+<body>
+    <footer th:fragment="footer" class="footer-devquery">
+        <style>
+            /* Footer Container */
+            .footer-devquery {
+                background-color: #232629;
+                color: #babfc4;
+                padding: 32px 0 24px 0;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI Adjusted", "Segoe UI", "Liberation Sans", sans-serif;
+            }
+
+            .footer-content {
+                max-width: 1264px;
+                margin: 0 auto;
+                padding: 0 24px;
+                display: flex;
+                flex-direction: column;
+            }
+
+            /* Top Grid: Logo on the left, 4 link columns on the right */
+            .footer-grid {
+                display: grid;
+                grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+                gap: 20px;
+                margin-bottom: 40px;
+            }
+
+            /* Footer Logo Area */
+            .footer-logo-col {
+                display: flex;
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .footer-logo {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-size: 20px;
+                text-decoration: none;
+            }
+
+            .footer-logo span {
+                color: #f48024;
+                font-weight: bold;
+            }
+
+            /* Footer Sections */
+            .footer-section h5 {
+                color: #babfc4;
+                font-size: 13px;
+                font-weight: 700;
+                text-transform: uppercase;
+                margin-bottom: 12px;
+            }
+
+            .footer-section ul {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+            }
+
+            .footer-section ul li {
+                margin-bottom: 8px;
+            }
+
+            .footer-section ul li a {
+                color: #9fa6ad;
+                font-size: 13px;
+                text-decoration: none;
+                transition: color 0.1s ease;
+                cursor: pointer;
+            }
+
+            .footer-section ul li a:hover {
+                color: #e3e6e8;
+            }
+
+            /* Footer Bottom (Social & Copyright) */
+            .footer-bottom {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-end;
+                flex-wrap: wrap;
+                gap: 20px;
+                font-size: 11px;
+                color: #9fa6ad;
+            }
+
+            .footer-social {
+                display: flex;
+                gap: 16px;
+            }
+
+            .footer-social a {
+                color: #9fa6ad;
+                font-size: 13px;
+                text-decoration: none;
+                transition: color 0.1s ease;
+                cursor: pointer;
+            }
+
+            .footer-social a:hover {
+                color: #e3e6e8;
+            }
+
+            .footer-copyright {
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+                text-align: right;
+            }
+
+            /* Responsive Design */
+            @media (max-width: 991px) {
+                .footer-grid {
+                    grid-template-columns: repeat(2, 1fr);
+                }
+
+                .footer-logo-col {
+                    grid-column: span 2;
+                    margin-bottom: 20px;
+                }
+            }
+
+            @media (max-width: 576px) {
+                .footer-grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .footer-logo-col {
+                    grid-column: span 1;
+                }
+
+                .footer-bottom {
+                    flex-direction: column;
+                    align-items: flex-start;
+                }
+
+                .footer-copyright {
+                    text-align: left;
+                }
+            }
+        </style>
+
+        <div class="footer-content">
+            <div class="footer-grid">
+
+                <div class="footer-logo-col">
+                    <a th:href="@{/home}" class="footer-logo">
+                        <i class="fa-brands fa-stack-overflow fa-lg text-warning"></i>
+                        <span>DevQuery</span>
+                    </a>
+                </div>
+
+                <div class="footer-section">
+                    <h5>Company</h5>
+                    <ul>
+                        <li><a>About</a></li>
+                        <li><a>Blog</a></li>
+                        <li><a>Careers</a></li>
+                        <li><a>Contact</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h5>Products</h5>
+                    <ul>
+                        <li><a>DevQuery</a></li>
+                        <li><a>Documentation</a></li>
+                        <li><a>API Reference</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h5>Community</h5>
+                    <ul>
+                        <li><a>Questions</a></li>
+                        <li><a>Tags</a></li>
+                        <li><a>Users</a></li>
+                        <li><a>Badges</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h5>Resources</h5>
+                    <ul>
+                        <li><a>Help Center</a></li>
+                        <li><a>Privacy Policy</a></li>
+                        <li><a>Terms of Service</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div class="footer-social">
+                    <a title="GitHub">GitHub</a>
+                    <a title="Twitter">Twitter</a>
+                    <a title="LinkedIn">LinkedIn</a>
+                    <a title="Instagram">Instagram</a>
+                </div>
+                <div class="footer-copyright">
+                    <span>&copy; 2026 DevQuery. All rights reserved.</span>
+                    <span>Made with <i class="fa-solid fa-heart text-warning"></i> by DevQuery Team.</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>

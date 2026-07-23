@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${uPro.username + ' - Votes - DevQuery'}">Votes - DevQuery</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        if (localStorage.getItem('devquery-theme') === 'dark') {
+            document.write('<style>body { background-color: #2d3135 !important; }</style>');
+        }
+    </script>
+    <style>
+        /* =================================================== */
+        /* UNIFIED CSS FOR ALL 7 ACTIVITY PAGES                */
+        /* =================================================== */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-body, #fff);
+            padding-top: 60px;
+            color: var(--text-primary, #232629);
+            font-size: 13px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI Adjusted", "Segoe UI", "Liberation Sans", sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .user-name {
+            font-size: 34px;
+            font-weight: normal;
+            margin-bottom: 4px;
+            color: var(--text-primary, #232629);
+            transition: color 0.3s ease;
+        }
+
+        .user-meta {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            color: var(--text-muted, #6a737c);
+            font-size: 13px;
+            transition: color 0.3s ease;
+        }
+
+        .profile-tabs {
+            border-bottom: none;
+            margin-bottom: 20px;
+        }
+
+        .profile-tabs .nav-link {
+            color: var(--text-secondary, #525960);
+            border-radius: 100px;
+            padding: 6px 12px;
+            margin-right: 5px;
+            border: none;
+            font-size: 13px;
+            transition: all 0.2s ease;
+        }
+
+        .profile-tabs .nav-link:hover {
+            background-color: var(--btn-hover-bg, #e3e6e8);
+            color: var(--text-primary, #0c0d0e);
+        }
+
+        .profile-tabs .nav-link.active {
+            background-color: #f48024 !important;
+            color: white !important;
+            font-weight: 500;
+        }
+
+        .activity-nav .list-group-item {
+            border: none;
+            padding: 6px 12px;
+            margin-bottom: 2px;
+            border-radius: 100px;
+            color: var(--text-secondary, #525960);
+            font-size: 13px;
+            background-color: transparent;
+            transition: all 0.2s ease;
+        }
+
+        .activity-nav .list-group-item:hover {
+            background-color: var(--btn-hover-bg, #f8f9f9);
+            color: var(--text-primary, #0c0d0e);
+        }
+
+        .activity-nav .list-group-item.active {
+            background-color: var(--border-color, #e3e6e8);
+            color: var(--text-primary, #0c0d0e);
+            font-weight: bold;
+        }
+
+        .so-list-container {
+            border: 1px solid var(--border-color, #d6d9dc);
+            border-radius: 5px;
+            background-color: var(--bg-panel, #fff);
+            transition: all 0.3s ease;
+        }
+
+        .so-list-item {
+            border-bottom: 1px solid var(--border-color, #e3e6e8);
+            padding: 16px;
+            transition: background-color 0.2s ease, border-color 0.3s ease;
+        }
+
+        .so-list-item:last-child {
+            border-bottom: none;
+        }
+
+        .so-list-item:hover {
+            background-color: var(--btn-hover-bg, #f8f9f9);
+        }
+
+        .so-link {
+            color: var(--link-color, #0074cc);
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+
+        .so-link:hover {
+            color: var(--link-hover, #0a95ff);
+        }
+
+        .btn-primary {
+            background-color: var(--link-color, #0074cc);
+            border-color: var(--link-color, #0074cc);
+            color: white;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--link-hover, #005999);
+            border-color: var(--link-hover, #005999);
+        }
+
+        .btn-outline-secondary {
+            border-color: var(--border-color, #d6d9dc);
+            color: var(--text-secondary, #525960);
+            background-color: transparent;
+            transition: all 0.2s ease;
+        }
+
+        .btn-outline-secondary:hover {
+            background-color: var(--btn-hover-bg, #e3e6e8);
+            color: var(--text-primary, #0c0d0e);
+            border-color: var(--border-color, #d6d9dc);
+        }
+
+        .main-container {
+            max-width: 1264px;
+            margin: 0 auto;
+            display: flex;
+            align-items: stretch;
+            background-color: var(--bg-body, #fff);
+            transition: background-color 0.3s ease;
+        }
+
+        .left-sidebar {
+            width: 164px;
+            flex-shrink: 0;
+            border-right: 1px solid var(--border-color, #d6d9dc);
+            transition: border-color 0.3s ease;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            padding: 24px;
+            width: 100%;
+            min-height: 100vh;
+            padding-bottom: 50px;
+        }
+
+        /* Activity Summary & Tags specific styling */
+        .so-panel {
+            border: 1px solid var(--border-color, #d6d9dc);
+            border-radius: 5px;
+            background-color: var(--bg-panel, #fff);
+            height: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .so-panel-header {
+            padding: 15px;
+            font-size: 21px;
+            font-weight: 400;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-primary, #232629);
+            border-bottom: 1px solid var(--border-color, #d6d9dc);
+            transition: all 0.3s ease;
+        }
+
+        .so-panel-body {
+            padding: 15px;
+        }
+
+        .tag-card {
+            border: 1px solid var(--border-color, #d6d9dc);
+            border-radius: 5px;
+            background-color: var(--bg-panel, #fff);
+            transition: all 0.2s ease;
+        }
+
+        .tag-card:hover {
+            background-color: var(--btn-hover-bg, #f8f9f9);
+        }
+    </style>
+</head>
+
+<body style="padding-top: 60px">
+    <div th:replace="~{Common/header :: header}"></div>
+    <div class="main-container">
+        <div class="left-sidebar d-none d-md-block">
+            <div th:replace="~{Common/sidebar :: sidebar('profile')}"></div>
+        </div>
+        <main class="main-content">
+            <div th:replace="~{Common/profileTemplate :: profileTemplate('activity')}"></div>
+            <div class="row mt-4">
+                <div class="col-md-2">
+                    <div class="list-group list-group-flush activity-nav">
+                        <a th:href="@{/activity(id=${uPro.userId}, tab='summary')}"
+                            class="list-group-item list-group-item-action">Summary</a>
+                        <a th:href="@{/activity(id=${uPro.userId}, tab='questions')}"
+                            class="list-group-item list-group-item-action">Questions</a>
+                        <a th:href="@{/activity(id=${uPro.userId}, tab='answers')}"
+                            class="list-group-item list-group-item-action">Answers</a>
+                        <a th:href="@{/activity(id=${uPro.userId}, tab='comments')}"
+                            class="list-group-item list-group-item-action">Comments</a>
+                        <a th:href="@{/activity(id=${uPro.userId}, tab='tags')}"
+                            class="list-group-item list-group-item-action">Tags</a>
+                        <a th:href="@{/activity(id=${uPro.userId}, tab='follows')}"
+                            class="list-group-item list-group-item-action">Follows</a>
+                        <th:block sec:authorize="isAuthenticated()">
+                            <a th:if="${loggedInUser != null && loggedInUser.userId == uPro.userId}"
+                                th:href="@{/activity(id=${uPro.userId}, tab='votes')}"
+                                class="list-group-item list-group-item-action active">Votes</a>
+                        </th:block>
+                    </div>
+                </div>
+                <div class="col-md-10 ps-md-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="fw-normal fs-4" th:text="${'Vote History (' + totalRecords + ')'}">Vote History (0)
+                        </h4>
+                    </div>
+                    <div class="so-list-container">
+                        <th:block th:if="${itemsList != null and !itemsList.isEmpty()}">
+                            <div th:each="v : ${itemsList}" class="so-list-item d-flex align-items-center">
+                                <th:block th:if="${v.voteType == 'up'}">
+                                    <div class="text-success text-center me-3 fs-5" style="width: 40px;"><i
+                                            class="fa-solid fa-circle-arrow-up"></i></div>
+                                </th:block>
+                                <th:block th:unless="${v.voteType == 'up'}">
+                                    <div class="text-danger text-center me-3 fs-5" style="width: 40px;"><i
+                                            class="fa-solid fa-circle-arrow-down"></i></div>
+                                </th:block>
+                                <div class="flex-grow-1">
+                                    <span class="badge bg-secondary me-2 fw-normal" style="font-size: 10px;"
+                                        th:text="${v.postType}">Type</span>
+                                    <a th:href="@{/question(id=${v.questionId})}" class="so-link"
+                                        th:text="${v.title}">Title</a>
+                                </div>
+                                <div class="text-muted" style="font-size: 12px; min-width: 100px; text-align: right;"
+                                    th:text="${#dates.format(v.createdAt, 'MMM dd, yyyy')}">Date</div>
+                            </div>
+                        </th:block>
+                        <th:block th:if="${itemsList == null or itemsList.isEmpty()}">
+                            <div class="text-center text-muted p-5">No voting history found.</div>
+                        </th:block>
+                    </div>
+                    <th:block th:if="${totalPage != null and totalPage > 1}">
+                        <div class="mt-4">
+                            <a th:each="i : ${#numbers.sequence(1, totalPage)}"
+                                th:href="@{/activity(id=${uPro.userId}, tab='votes', page=${i})}"
+                                th:classappend="${currentPage == i ? 'btn-primary' : 'btn-outline-secondary'}"
+                                class="btn btn-sm me-1" th:text="${i}">1</a>
+                        </div>
+                    </th:block>
+                </div>
+            </div>
+        </main>
+    </div>
+    <div th:replace="~{Common/footer :: footer}"></div>
+</body>
+
+</html>

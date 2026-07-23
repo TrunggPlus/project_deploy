@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DevQuery - Home</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        if (localStorage.getItem('devquery-theme') === 'dark') {
+            document.write('<style>body { background-color: #2d3135 !important; }</style>');
+        }
+    </script>
+    <style>
+        /* Reset & Base */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI Adjusted", "Segoe UI", "Liberation Sans", sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            font-size: 13px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* ========================================================= */
+        /* LAYOUT & SIDEBARS                                         */
+        /* ========================================================= */
+        .main-container {
+            max-width: 1264px;
+            margin: 56px auto 0;
+            display: flex;
+            align-items: stretch;
+            background-color: var(--bg-body);
+        }
+
+        .left-sidebar {
+            width: 164px;
+            flex-shrink: 0;
+            border-right: 1px solid var(--border-color);
+        }
+
+        .main-content {
+            flex-grow: 1;
+            padding: 24px;
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        .right-sidebar {
+            width: 300px;
+            flex-shrink: 0;
+            padding: 24px 0 20px 24px;
+            position: -webkit-sticky;
+            position: sticky;
+            top: 60px;
+            height: calc(100vh - 60px);
+            overflow-y: auto;
+        }
+
+        .right-sidebar::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .right-sidebar::-webkit-scrollbar-thumb {
+            background: transparent;
+            border-radius: 10px;
+        }
+
+        .right-sidebar:hover::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+        }
+
+        /* ========================================================= */
+        /* MAIN CONTENT - QUESTIONS & FILTERS                        */
+        /* ========================================================= */
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .page-title {
+            font-size: 27px;
+            font-weight: 400;
+            color: var(--text-primary);
+        }
+
+        .btn-primary-custom {
+            background-color: var(--link-color);
+            color: white;
+            padding: 10px 14px;
+            border-radius: 3px;
+            text-decoration: none;
+            font-size: 13px;
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary-custom:hover {
+            background-color: var(--link-hover);
+            color: white;
+        }
+
+        .filters-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .total-questions {
+            font-size: 17px;
+            color: var(--text-primary);
+        }
+
+        .filter-btn-group {
+            display: flex;
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .filter-item {
+            padding: 10px 12px;
+            background: var(--bg-panel);
+            border-right: 1px solid var(--border-color);
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .filter-item:last-child {
+            border-right: none;
+        }
+
+        .filter-item:hover {
+            background-color: var(--btn-hover-bg);
+            color: var(--text-primary);
+        }
+
+        .filter-item.active {
+            background-color: var(--btn-hover-bg);
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        /* Question Item */
+        .question-item {
+            display: flex;
+            padding: 16px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .stats-container {
+            width: 108px;
+            margin-right: 16px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 6px;
+            color: var(--text-muted);
+        }
+
+        .stat-box.votes {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .stat-box.status-answered {
+            border: 1px solid #48a868;
+            color: #48a868;
+            padding: 4px 6px;
+            border-radius: 3px;
+        }
+
+        .question-summary {
+            flex-grow: 1;
+        }
+
+        .question-title {
+            font-size: 17px;
+            color: var(--link-color);
+            text-decoration: none;
+            margin-bottom: 5px;
+            display: block;
+            transition: color 0.2s;
+        }
+
+        .question-title:hover {
+            color: var(--link-hover);
+        }
+
+        .question-excerpt {
+            margin-bottom: 8px;
+            line-height: 1.4;
+            color: var(--text-secondary);
+        }
+
+        .meta-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-card {
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: var(--text-muted);
+        }
+
+        /* ========================================================= */
+        /* RIGHT SIDEBAR WIDGETS & TAGS                              */
+        /* ========================================================= */
+        .widget {
+            border-radius: 3px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-panel);
+            font-size: 13px;
+        }
+
+        .widget-yellow {
+            background-color: var(--gold-bg);
+            border-color: var(--gold-border);
+        }
+
+        .widget-header {
+            padding: 12px 15px;
+            font-weight: bold;
+            border-bottom: 1px solid var(--border-color);
+            background-color: transparent;
+            color: var(--text-primary);
+        }
+
+        .widget-list {
+            list-style: none;
+        }
+
+        .widget-list li {
+            padding: 12px 15px;
+            display: flex;
+            gap: 10px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .widget-list li:last-child {
+            border-bottom: none;
+        }
+
+        .popular-tags-box {
+            margin-top: 20px;
+        }
+
+        .popular-tags-box h3 {
+            font-size: 19px;
+            font-weight: 400;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+
+        .popular-tags-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .post-tag {
+            background-color: var(--tag-bg);
+            color: var(--tag-text);
+            border: 1px solid var(--border-color);
+            padding: 4px 8px;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .post-tag:hover {
+            background-color: var(--border-color);
+        }
+
+        .post-tag.active-tag {
+            background-color: var(--tag-text);
+            color: var(--bg-body);
+        }
+
+        /* ========================================================= */
+        /* FOOTER OVERRIDES                                          */
+        /* ========================================================= */
+        .footer-devquery {
+            background-color: #242729;
+            color: #ffffff;
+            margin-top: 40px;
+            padding: 25px 0 15px 0;
+            border-top: 1px solid #34495e;
+        }
+
+        .footer-content {
+            max-width: 1264px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin-bottom: 15px;
+        }
+
+        .footer-section h5 {
+            color: #f48024;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 6px;
+            color: #ffffff;
+            font-size: 13px;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #34495e;
+            padding-top: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+/* ============================
+        Terms Popup
+============================ */
+
+#termsModal{
+    position:fixed;
+    inset:0;
+
+    background:rgba(0,0,0,.65);
+
+    backdrop-filter:blur(8px);
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    z-index:999999;
+}
+
+.terms-card{
+
+    width:620px;
+    max-width:92%;
+
+    background:#2f3337;
+
+    border-radius:10px;
+
+    padding:28px 30px;
+
+    color:white;
+
+    box-shadow:0 15px 40px rgba(0,0,0,.45);
+
+    position: relative;
+}
+
+.terms-card h2{
+
+    text-align:center;
+
+    font-size:34px;
+
+    font-weight:700;
+
+    margin-bottom:20px;
+}
+
+.terms-description{
+
+    font-size:14px;
+
+    color:#d6d9dc;
+
+    line-height:1.6;
+
+    margin-bottom:14px;
+}
+
+.terms-card hr{
+
+    border:none;
+
+    border-top:1px solid #4b4f53;
+
+    margin:18px 0;
+}
+
+.terms-check{
+
+    display:flex;
+
+    align-items:flex-start;
+
+    gap:12px;
+
+    margin-top:18px;
+
+    font-size:15px;
+
+    line-height:1.7;
+
+    color:white;
+}
+.terms-check span{
+
+    flex:1;
+}
+
+.terms-check input{
+
+    margin-top:4px;
+
+    width:18px;
+
+    height:18px;
+}
+
+.terms-check a{
+
+    color:#4da3ff;
+
+    text-decoration:none;
+}
+
+.terms-check a:hover{
+
+    text-decoration:underline;
+}
+
+.terms-actions{
+
+    margin-top:28px;
+
+    display:flex;
+
+    justify-content:flex-end;
+
+    gap:12px;
+}
+
+.btn-decline{
+
+    background:none;
+
+    border:none;
+
+    color:#b9bec4;
+
+    cursor:pointer;
+
+    padding:10px 14px;
+}
+
+.btn-decline:hover{
+
+    color:white;
+}
+
+.btn-accept{
+
+    background:#379fef;
+
+    color:white;
+
+    border:none;
+
+    padding:11px 18px;
+
+    border-radius:5px;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:.2s;
+}
+
+.btn-accept:hover:not(:disabled){
+
+    background:#2388d9;
+}
+
+.btn-accept:disabled{
+
+    opacity:.45;
+
+    cursor:not-allowed;
+}
+
+
+.terms-title-light{
+
+    font-weight:600;
+}
+.terms-title{
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    gap:18px;
+
+    margin-bottom:26px;
+}
+
+.terms-logo{
+
+    width:58px;
+    height:58px;
+
+    object-fit:contain;
+}
+
+.brand-name{
+
+    font-size:34px;
+    font-weight:700;
+}
+
+.terms-text{
+
+    font-size:34px;
+    font-weight:600;
+}
+
+.title-group{
+
+    display:flex;
+    align-items:baseline;
+    gap:12px;
+}
+.terms-close{
+    position:absolute;
+    top:14px;
+    right:16px;
+
+    background:none;
+    border:none;
+
+    color:#b9bec4;
+    font-size:22px;
+
+    cursor:pointer;
+    transition:.2s;
+}
+
+.terms-close:hover{
+    color:white;
+}
+
+
+    </style>
+</head>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const modal = document.getElementById("termsModal");
+    const checkbox = document.getElementById("agreeTerms");
+    const acceptBtn = document.getElementById("acceptBtn");
+    const declineBtn = document.getElementById("declineBtn");
+    const closeBtn = document.getElementById("closeTermsBtn");
+
+    // Enable / Disable Accept button
+    if (checkbox && acceptBtn) {
+        checkbox.addEventListener("change", function () {
+            acceptBtn.disabled = !checkbox.checked;
+        });
+    }
+
+    function closeTermsModal() {
+        if (modal) {
+            modal.style.display = "none";
+        }
+    }
+
+    // Click X
+    if (closeBtn) {
+        closeBtn.addEventListener("click", closeTermsModal);
+    }
+
+    // Click Decline
+    if (declineBtn) {
+        declineBtn.addEventListener("click", closeTermsModal);
+    }
+
+    // Click outside popup
+    if (modal) {
+        modal.addEventListener("click", function (e) {
+            if (e.target === modal) {
+                closeTermsModal();
+            }
+        });
+    }
+    declineBtn.addEventListener("click", function () {
+    window.location.href = "/auth/logout";
+    });
+
+});
+    
+
+</script>
+<body>
+     <!-- Terms Popup -->
+<div th:if="${showTermsPopup}" id="termsModal">
+    <div class="terms-card">
+        <button id="closeTermsBtn" class="terms-close" type="button">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <h2 class="terms-title">
+            <img th:src="@{/assets/img/logo-icon.png}"
+                alt="DevQuery Logo"
+                class="terms-logo">
+                <div class="title-group">
+                    <span class="brand-name">DevQuery</span>
+                    <span class="terms-text">Terms & Rules</span>
+                </div>
+        </h2>
+        <p class="terms-description">
+            Welcome to DevQuery. To help maintain a respectful and safe community,
+            please read and agree to the Community Rules and Terms of Use before continuing.
+        </p>
+        <hr>
+        <label class="terms-check">
+            <input type="checkbox" id="agreeTerms">
+                <span>
+                    I have read and agree to the
+                    <a th:href="@{/system-rules}" target="_self">
+                        Community Rules and Terms of Use
+                    </a>.
+                </span>
+        </label>
+        <div class="terms-actions">
+            <button id="declineBtn" class="btn-decline" type="button">
+                Decline & Logout
+            </button>
+            <form th:action="@{/accept-terms}" method="post" style="display:inline;">
+                <button
+                    id="acceptBtn"
+                    class="btn-accept"
+                    type="submit"
+                    disabled>Accept & Continue</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+    <div th:replace="~{Common/header :: header}"></div>
+
+    <div class="main-container">
+
+        <div class="left-sidebar d-none d-md-block">
+            <div th:replace="~{Common/sidebar :: sidebar('home')}"></div>
+        </div>
+
+        <main class="main-content">
+            <div class="content-header">
+                <h1 class="page-title">
+                    <span th:if="${currentKeyword != null and !#strings.isEmpty(currentKeyword)}"
+                        th:text="|Search results for '${currentKeyword}'|">
+                        Search results
+                    </span>
+                         
+                    <span th:unless="${currentKeyword != null and !#strings.isEmpty(currentKeyword)}">
+                        Top Questions
+                    </span>
+                </h1>
+
+                <a th:href="@{/questions/ask}" class="btn-primary-custom">Ask Question</a>
+            </div>
+
+            <div class="filters-container">
+                <div class="total-questions">
+                    <span th:text="${totalQuestions}">0</span> results
+                </div>
+
+                <div class="filter-btn-group">
+                    <a th:href="@{/home(q=${currentKeyword}, tag=${currentTag}, tab='newest')}" class="filter-item"
+                        th:classappend="${currentSort == 'newest' and currentFilter != 'unanswered'} ? ' active' : ''">
+                        Newest
+                    </a>
+
+                    <a th:href="@{/home(q=${currentKeyword}, tag=${currentTag}, tab='active')}" class="filter-item"
+                        th:classappend="${currentSort == 'active'} ? ' active' : ''">
+                        Active
+                    </a>
+
+                    <a th:href="@{/home(q=${currentKeyword}, tag=${currentTag}, tab='views')}" class="filter-item"
+                        th:classappend="${currentSort == 'views'} ? ' active' : ''">
+                        Views
+                    </a>
+
+                    <a th:href="@{/home(q=${currentKeyword}, tag=${currentTag}, tab='voted')}" class="filter-item"
+                        th:classappend="${currentSort == 'voted'} ? ' active' : ''">
+                        Voted
+                    </a>
+
+                    <a th:href="@{/home(q=${currentKeyword}, tag=${currentTag}, filter='unanswered')}"
+                        class="filter-item" th:classappend="${currentFilter == 'unanswered'} ? ' active' : ''">
+                        Unanswered
+                    </a>
+                </div>
+            </div>
+
+            <div th:each="q : ${questions}" class="question-item">
+                <div class="stats-container">
+                    <div class="stat-box votes" th:text="|${q.score != null ? q.score : 0} votes|">
+                        0 votes
+                    </div>
+
+                    <div class="stat-box"
+                        th:classappend="${q.answerCount != null and q.answerCount > 0} ? ' status-answered' : ''"
+                        th:text="|${q.answerCount != null ? q.answerCount : 0} answers|">
+                        0 answers
+                    </div>
+
+                    <div class="stat-box" th:text="|${q.viewCount != null ? q.viewCount : 0} views|">
+                        0 views
+                    </div>
+                </div>
+
+                <div class="question-summary">
+                    <a th:href="@{/question(id=${q.questionId})}" class="question-title" th:text="${q.title}">
+                        Question title
+                    </a>
+
+                    <p class="question-excerpt"
+                        th:text="${q.body == null ? '' : (#strings.length(q.body) > 180 ? #strings.substring(q.body, 0, 180) + '...' : q.body)}">
+                        Question body
+                    </p>
+
+                    <div class="meta-container">
+                        <div class="tags" th:with="tags=${questionTags[q.questionId]}">
+                            <a th:each="t : ${tags}" th:href="@{/home(tag=${t})}" class="post-tag" th:text="${t}">
+                                java
+                            </a>
+                        </div>
+
+                        <div class="user-card">
+                            <span>asked</span>
+                            <span th:text="${q.createdAt != null ? #dates.format(q.createdAt, 'MMM dd, yyyy') : ''}">
+                                today
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div th:if="${questions == null or #lists.isEmpty(questions)}" class="text-center mt-5">
+                <h5>No questions found</h5>
+                <p>Try another keyword or filter.</p>
+                <a th:href="@{/home}" class="btn btn-outline-primary btn-sm">Back to home</a>
+            </div>
+
+            <nav th:if="${totalPage > 1}" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item" th:classappend="${currentPage <= 1} ? ' disabled' : ''">
+                        <a class="page-link"
+                            th:href="@{/home(page=${currentPage - 1}, q=${currentKeyword}, tag=${currentTag}, tab=${currentSort}, filter=${currentFilter})}">
+                            Previous
+                        </a>
+                    </li>
+
+                    <li class="page-item" th:each="i : ${#numbers.sequence(1, totalPage)}"
+                        th:classappend="${i == currentPage} ? ' active' : ''">
+                        <a class="page-link"
+                            th:href="@{/home(page=${i}, q=${currentKeyword}, tag=${currentTag}, tab=${currentSort}, filter=${currentFilter})}"
+                            th:text="${i}">
+                            1
+                        </a>
+                    </li>
+
+                    <li class="page-item" th:classappend="${currentPage >= totalPage} ? ' disabled' : ''">
+                        <a class="page-link"
+                            th:href="@{/home(page=${currentPage + 1}, q=${currentKeyword}, tag=${currentTag}, tab=${currentSort}, filter=${currentFilter})}">
+                            Next
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </main>
+
+        <aside class="right-sidebar d-none d-lg-block">
+            <div class="widget widget-yellow">
+                <div class="widget-header">The Dev Blog</div>
+                <div class="widget-content">
+                    <ul class="widget-list">
+                        <li><span class="widget-icon">📝</span><span>Migrating from Servlets to Spring Boot: A
+                                Guide</span></li>
+                        <li><span class="widget-icon">🚀</span><span>DevQuery V2 Release Notes</span></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="popular-tags-box">
+                <h3>Popular tags</h3>
+
+                <div class="popular-tags-list">
+                    <a th:each="popTag : ${popularTags}" th:href="@{/home(tag=${popTag})}" class="post-tag"
+                        th:classappend="${popTag == currentTag} ? ' active-tag' : ''" th:text="${popTag}">
+                        java
+                    </a>
+                </div>
+
+                <p th:if="${popularTags == null or #lists.isEmpty(popularTags)}" class="mt-2"
+                    style="color: var(--text-secondary);">
+                    No popular tags yet.
+                </p>
+            </div>
+        </aside>
+    </div>
+
+    <div th:replace="~{Common/footer :: footer}"></div>
+
+</body>
+
+</html>

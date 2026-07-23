@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bounty Questions - DevQuery</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        if (localStorage.getItem('devquery-theme') === 'dark') {
+            document.write('<style>body { background-color: #2d3135 !important; }</style>');
+        }
+    </script>
+    <style>
+        /* Reset & Base */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI Adjusted", "Segoe UI", "Liberation Sans", sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            font-size: 13px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* ========================================================= */
+        /* LAYOUT & SIDEBARS                                         */
+        /* ========================================================= */
+        .main-container {
+            max-width: 1264px;
+            margin: 56px auto 0;
+            display: flex;
+            align-items: stretch;
+            background-color: var(--bg-body);
+        }
+
+        .left-sidebar {
+            width: 164px;
+            flex-shrink: 0;
+            border-right: 1px solid var(--border-color);
+        }
+
+        .main-content {
+            flex-grow: 1;
+            padding: 24px;
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        .right-sidebar {
+            width: 300px;
+            flex-shrink: 0;
+            padding: 24px 0 20px 24px;
+            position: -webkit-sticky;
+            position: sticky;
+            top: 60px;
+            height: calc(100vh - 60px);
+            overflow-y: auto;
+        }
+
+        .right-sidebar::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .right-sidebar::-webkit-scrollbar-thumb {
+            background: transparent;
+            border-radius: 10px;
+        }
+
+        .right-sidebar:hover::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+        }
+
+        /* ========================================================= */
+        /* MAIN CONTENT - QUESTIONS & FILTERS                        */
+        /* ========================================================= */
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .page-title {
+            font-size: 27px;
+            font-weight: 400;
+            color: var(--text-primary);
+        }
+
+        .btn-primary-custom {
+            background-color: var(--link-color);
+            color: white;
+            padding: 10px 14px;
+            border-radius: 3px;
+            text-decoration: none;
+            font-size: 13px;
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary-custom:hover {
+            background-color: var(--link-hover);
+            color: white;
+        }
+
+        /* Bounties Sort strip */
+        .sort-strip {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .sort-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 14px;
+            border-radius: 999px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-panel);
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .sort-pill.active {
+            color: #fff;
+            background: #9a6400;
+            border-color: #9a6400;
+        }
+
+        /* Question Item */
+        .question-item {
+            display: flex;
+            padding: 16px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .stats-container {
+            width: 108px;
+            margin-right: 16px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 6px;
+            color: var(--text-muted);
+        }
+        
+        .bounty-badge {
+            background-color: #9a6400;
+            color: white;
+            padding: 4px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 13px;
+            text-align: center;
+            display: inline-block;
+        }
+
+        .stat-box.votes {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .stat-box.status-answered {
+            border: 1px solid #48a868;
+            color: #48a868;
+            padding: 4px 6px;
+            border-radius: 3px;
+        }
+
+        .question-summary {
+            flex-grow: 1;
+        }
+
+        .question-title {
+            font-size: 17px;
+            color: var(--link-color);
+            text-decoration: none;
+            margin-bottom: 5px;
+            display: block;
+            transition: color 0.2s;
+        }
+
+        .question-title:hover {
+            color: var(--link-hover);
+        }
+
+        .question-excerpt {
+            margin-bottom: 8px;
+            line-height: 1.4;
+            color: var(--text-secondary);
+        }
+
+        .meta-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-card {
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: var(--text-muted);
+        }
+
+        /* ========================================================= */
+        /* RIGHT SIDEBAR WIDGETS & TAGS                              */
+        /* ========================================================= */
+        .widget {
+            border-radius: 3px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-panel);
+            font-size: 13px;
+        }
+
+        .widget-yellow {
+            background-color: var(--gold-bg);
+            border-color: var(--gold-border);
+        }
+
+        .widget-header {
+            padding: 12px 15px;
+            font-weight: bold;
+            border-bottom: 1px solid var(--border-color);
+            background-color: transparent;
+            color: var(--text-primary);
+        }
+
+        .widget-list {
+            list-style: none;
+        }
+
+        .widget-list li {
+            padding: 12px 15px;
+            display: flex;
+            gap: 10px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .widget-list li:last-child {
+            border-bottom: none;
+        }
+
+        .popular-tags-box {
+            margin-top: 20px;
+        }
+
+        .popular-tags-box h3 {
+            font-size: 19px;
+            font-weight: 400;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+
+        .popular-tags-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .post-tag {
+            background-color: var(--tag-bg);
+            color: var(--tag-text);
+            border: 1px solid var(--border-color);
+            padding: 4px 8px;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .post-tag:hover {
+            background-color: var(--border-color);
+        }
+
+        .post-tag.active-tag {
+            background-color: var(--tag-text);
+            color: var(--bg-body);
+        }
+
+        /* ========================================================= */
+        /* FOOTER OVERRIDES                                          */
+        /* ========================================================= */
+        .footer-devquery {
+            background-color: #242729;
+            color: #ffffff;
+            margin-top: 40px;
+            padding: 25px 0 15px 0;
+            border-top: 1px solid #34495e;
+        }
+
+        .footer-content {
+            max-width: 1264px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin-bottom: 15px;
+        }
+
+        .footer-section h5 {
+            color: #f48024;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 6px;
+            color: #ffffff;
+            font-size: 13px;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #34495e;
+            padding-top: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Header -->
+    <div th:replace="~{Common/header :: header}"></div>
+
+    <div class="main-container">
+        <!-- Sidebar -->
+        <div class="left-sidebar d-none d-md-block">
+            <div th:replace="~{Common/sidebar :: sidebar('bounties')}"></div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="content-header">
+                <div>
+                    <h1 class="page-title mb-1">Bounty Questions</h1>
+                    <p class="text-secondary mb-0">Active questions offering reputation bounties. Answer these to earn
+                        extra reputation!</p>
+                </div>
+            </div>
+
+            <div class="sort-strip">
+                <a th:href="@{/bounties(sort='amount')}" class="sort-pill"
+                    th:classappend="${currentSort == 'amount' ? 'active' : ''}">
+                    <i class="fa-solid fa-coins me-1"></i> Highest Bounty
+                </a>
+                <a th:href="@{/bounties(sort='newest')}" class="sort-pill"
+                    th:classappend="${currentSort == 'newest' ? 'active' : ''}">
+                    <i class="fa-solid fa-clock me-1"></i> Newest
+                </a>
+                <a th:href="@{/bounties(sort='expiring')}" class="sort-pill"
+                    th:classappend="${currentSort == 'expiring' ? 'active' : ''}">
+                    <i class="fa-solid fa-hourglass-half me-1"></i> Expiring Soon
+                </a>
+            </div>
+
+            <div class="question-list">
+                <div th:each="q : ${bountyQuestions}" class="question-item">
+                    <div class="stats-container">
+                        <div class="stat-box votes">
+                            <span class="bounty-badge">+<span th:text="${q.bountyAmount}">100</span></span>
+                        </div>
+                        <div class="stat-box" th:text="|${q.answerCount} answers|">
+                            0 answers
+                        </div>
+                        <div class="stat-box text-secondary" th:text="|${q.viewCount} views|">
+                            0 views
+                        </div>
+                    </div>
+                    <div class="question-summary">
+                        <a th:href="@{/question(id=${q.questionId})}" class="question-title"
+                            th:text="${q.title}">Question Title</a>
+                        <p class="question-excerpt" th:text="${#strings.abbreviate(q.body, 200)}">Question excerpt</p>
+
+                        <div class="meta-container">
+                            <div class="tags">
+                                <a th:each="tag : ${q.tags}" th:href="@{/home(tag=${tag})}" class="post-tag"
+                                    th:text="${tag}">java</a>
+                            </div>
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="text-danger font-monospace" style="font-size: 11px;">
+                                    <i class="fa-solid fa-hourglass-half me-1"></i>Expires:
+                                    <span th:text="${#dates.format(q.bountyExpiresAt, 'dd-MM-yyyy HH:mm')}">expiry
+                                        date</span>
+                                </span>
+                                <div class="user-card">
+                                    <img th:if="${q.authorAvatar != null}" th:src="${q.authorAvatar}"
+                                        class="rounded-circle" width="18" height="18" alt="avatar" />
+                                    <i th:if="${q.authorAvatar == null}" class="fa-solid fa-user-circle"></i>
+                                    <span th:text="${q.authorName}">Author</span>
+                                    <span class="text-muted">asked <span
+                                            th:text="${#dates.format(q.createdAt, 'dd-MM-yyyy')}">date</span></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div th:if="${#lists.isEmpty(bountyQuestions)}" class="alert alert-info mt-3 text-center">
+                    There are currently no active bounty questions.
+                </div>
+            </div>
+        </main>
+
+        <!-- Right Sidebar -->
+        <aside class="right-sidebar d-none d-lg-block">
+            <div class="popular-tags-box">
+                <h3>Popular tags</h3>
+                <div class="popular-tags-list">
+                    <a th:each="tag : ${popularTags}" th:href="@{/home(tag=${tag})}" class="post-tag"
+                        th:text="${tag}">tag</a>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Footer -->
+    <div th:replace="~{Common/footer :: footer}"></div>
+</body>
+
+</html>
