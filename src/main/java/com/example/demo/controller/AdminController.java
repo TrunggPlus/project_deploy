@@ -81,7 +81,7 @@ public class AdminController {
             model.addAttribute("topTagsJson", "[]");
         }
 
-        return "Admin/dashboard";
+        return "admin/dashboard";
     }
 
     @GetMapping("/users")
@@ -112,13 +112,13 @@ public class AdminController {
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", totalPages);
         model.addAttribute("totalUsers", total);
-        return "Admin/users";
+        return "admin/users";
     }
 
     @GetMapping("/tags")
     public String tags(Model model) {
         model.addAttribute("tags", tagRepository.findAll());
-        return "Admin/tags";
+        return "admin/tags";
     }
 
     @GetMapping("/reports")
@@ -136,25 +136,25 @@ public class AdminController {
         model.addAttribute("resolvedCount", reportRepository.countByStatus("resolved"));
         model.addAttribute("dismissedCount", reportRepository.countByStatus("dismissed"));
         model.addAttribute("totalCount", (int) reportRepository.count());
-        return "Admin/reports";
+        return "admin/reports";
     }
 
     @GetMapping("/rules")
     public String rules(Model model) {
         model.addAttribute("rules", ruleRepository.findAll());
-        return "Admin/rules";
+        return "admin/rules";
     }
 
     @GetMapping("/badges")
     public String badges(Model model) {
         model.addAttribute("badges", badgeRepository.findAll());
-        return "Admin/badges";
+        return "admin/badges";
     }
 
     @GetMapping("/blogs")
     public String blogs(Model model) {
         model.addAttribute("blogs", blogRepository.findAll());
-        return "Admin/blogs";
+        return "admin/blogs";
     }
 
     @GetMapping("/feedbacks")
@@ -172,6 +172,6 @@ public class AdminController {
         model.addAttribute("totalFeedbacks", total);
         model.addAttribute("currentPage", safePage);
         model.addAttribute("totalPages", totalPages);
-        return "Admin/feedbacks";
+        return "admin/feedbacks";
     }
 }
