@@ -165,10 +165,10 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
             "(COALESCE(q.Score, 0) * 3 + COALESCE(q.view_count, 0) + (SELECT COUNT(*) FROM Answers a WHERE a.question_id = q.question_id) * 2) AS trendingScore " +
             "FROM Questions q " +
             "WHERE COALESCE(q.is_deleted, 0) = 0 AND COALESCE(q.is_draft, 0) = 0 " +
-            "AND q.created_at > DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 7 DAY) " +
+            "AND q.created_at > :thresholdDate " +
             "ORDER BY trendingScore DESC, q.created_at DESC",
             nativeQuery = true)
-    List<Object[]> findTrendingNative(Pageable pageable);
+    List<Object[]> findTrendingNative(@Param("thresholdDate") java.util.Date thresholdDate, Pageable pageable);
 
     // Popular questions: all-time activity score (score*3 + views + answers*2 + comments)
     @Query(value = "SELECT q.question_id AS questionId, q.title AS title, q.Score AS score, q.view_count AS viewCount, " +

@@ -76,11 +76,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
                         "ORDER BY questionCount DESC, t.tag_name ASC", nativeQuery = true)
         List<Map<String, Object>> getTopTagsByQuestionCount(Pageable pageable);
 
-        @Query(value = "SELECT CAST(created_at AS DATE) as date, COUNT(*) as count FROM Users WHERE created_at >= DATE_SUB(CURRENT_TIMESTAMP, INTERVAL :days DAY) GROUP BY CAST(created_at AS DATE) ORDER BY date", nativeQuery = true)
-        List<Map<String, Object>> getUserRegistrationTrend(@Param("days") int days);
+        @Query(value = "SELECT CAST(created_at AS DATE) as date, COUNT(*) as count FROM Users WHERE created_at >= :thresholdDate GROUP BY CAST(created_at AS DATE) ORDER BY date", nativeQuery = true)
+        List<Map<String, Object>> getUserRegistrationTrend(@Param("thresholdDate") java.util.Date thresholdDate);
 
-        @Query(value = "SELECT CAST(created_at AS DATE) as date, COUNT(*) as count FROM Questions WHERE created_at >= DATE_SUB(CURRENT_TIMESTAMP, INTERVAL :days DAY) GROUP BY CAST(created_at AS DATE) ORDER BY date", nativeQuery = true)
-        List<Map<String, Object>> getQuestionTrend(@Param("days") int days);
+        @Query(value = "SELECT CAST(created_at AS DATE) as date, COUNT(*) as count FROM Questions WHERE created_at >= :thresholdDate GROUP BY CAST(created_at AS DATE) ORDER BY date", nativeQuery = true)
+        List<Map<String, Object>> getQuestionTrend(@Param("thresholdDate") java.util.Date thresholdDate);
 
         @Query(value = "SELECT delta, reason FROM Reputation_History " +
                         "WHERE user_id = :userId " +
@@ -129,13 +129,44 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
         // --- Activity Tab Queries ---
 
-        @Query(value = "SELECT DATE_FORMAT(q.created_at, '%b %Y') as month, COUNT(*) as count " +
-                        "FROM Questions q " +
-                        "WHERE q.user_id = :userId " +
-                        "AND q.created_at >= DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 6 MONTH) " +
-                        "GROUP BY DATE_FORMAT(q.created_at, '%b %Y'), YEAR(q.created_at), MONTH(q.created_at) " +
-                        "ORDER BY YEAR(q.created_at) ASC, MONTH(q.created_at) ASC", nativeQuery = true)
-        List<Map<String, Object>> getQuestionsActivityChart(@Param("userId") long userId);
+        @Query(value = "SELECT q.created_at FROM Questions q WHERE q.user_id = :userId AND q.created_at >= :thresholdDate ORDER BY q.created_at ASC", nativeQuery = true)
+        List<java.sql.Timestamp> getQuestionsCreatedAtList(@Param("userId") long userId, @Param("thresholdDate") java.util.Date thresholdDate);
+
+        default List<Map<String, Object>> getQuestionsActivityChart(long userId) {
+            java.util.Calendar cal = java.util.Calendar.getInstance();
+            cal.add(java.util.Calendar.MONTH, -6);
+            java.util.Date thresholdDate = cal.getTime();
+            List<java.sql.Timestamp> dates = getQuestionsCreatedAtList(userId, thresholdDate);
+
+            java.util.Map<String, Integer> counts = new java.util.LinkedHashMap<>();
+            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("MMM yyyy", java.util.Locale.ENGLISH);
+            
+            // Pre-populate last 6 months with 0
+            java.util.Calendar tempCal = java.util.Calendar.getInstance();
+            tempCal.add(java.util.Calendar.MONTH, -5);
+            for (int i = 0; i < 6; i++) {
+                counts.put(sdf.format(tempCal.getTime()), 0);
+                tempCal.add(java.util.Calendar.MONTH, 1);
+            }
+            
+            for (java.sql.Timestamp ts : dates) {
+                if (ts != null) {
+                    String monthStr = sdf.format(ts);
+                    if (counts.containsKey(monthStr)) {
+                        counts.put(monthStr, counts.get(monthStr) + 1);
+                    }
+                }
+            }
+            
+            List<Map<String, Object>> result = new java.util.ArrayList<>();
+            for (Map.Entry<String, Integer> entry : counts.entrySet()) {
+                Map<String, Object> map = new java.util.HashMap<>();
+                map.put("month", entry.getKey());
+                map.put("count", entry.getValue());
+                result.add(map);
+            }
+            return result;
+        }
 
         @Query(value = "SELECT t.tag_name AS tagName, SUM(q.Score) AS score, COUNT(DISTINCT q.question_id) AS postCount "
                         +
