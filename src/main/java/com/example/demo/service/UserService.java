@@ -266,15 +266,11 @@ public class UserService {
     }
 
     public List<Map<String, Object>> getUserRegistrationTrend(int days) {
-        java.util.Calendar cal = java.util.Calendar.getInstance();
-        cal.add(java.util.Calendar.DAY_OF_YEAR, -days);
-        return userRepository.getUserRegistrationTrend(cal.getTime());
+        return userRepository.getUserRegistrationTrend(days);
     }
 
     public List<Map<String, Object>> getQuestionTrend(int days) {
-        java.util.Calendar cal = java.util.Calendar.getInstance();
-        cal.add(java.util.Calendar.DAY_OF_YEAR, -days);
-        return userRepository.getQuestionTrend(cal.getTime());
+        return userRepository.getQuestionTrend(days);
     }
 
     public List<String> getReputationChanges(long userId, int limit) {

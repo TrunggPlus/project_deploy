@@ -76,11 +76,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
                         "ORDER BY questionCount DESC, t.tag_name ASC", nativeQuery = true)
         List<Map<String, Object>> getTopTagsByQuestionCount(Pageable pageable);
 
-        @Query(value = "SELECT CAST(created_at AS DATE) as date, COUNT(*) as count FROM Users WHERE created_at >= :thresholdDate GROUP BY CAST(created_at AS DATE) ORDER BY date", nativeQuery = true)
-        List<Map<String, Object>> getUserRegistrationTrend(@Param("thresholdDate") java.util.Date thresholdDate);
+        @Query(value = "SELECT CAST(created_at AS DATE) as date, COUNT(*) as count FROM Users WHERE created_at >= (CURRENT_TIMESTAMP - INTERVAL :days DAY) GROUP BY CAST(created_at AS DATE) ORDER BY date", nativeQuery = true)
+        List<Map<String, Object>> getUserRegistrationTrend(@Param("days") int days);
 
-        @Query(value = "SELECT CAST(created_at AS DATE) as date, COUNT(*) as count FROM Questions WHERE created_at >= :thresholdDate GROUP BY CAST(created_at AS DATE) ORDER BY date", nativeQuery = true)
-        List<Map<String, Object>> getQuestionTrend(@Param("thresholdDate") java.util.Date thresholdDate);
+        @Query(value = "SELECT CAST(created_at AS DATE) as date, COUNT(*) as count FROM Questions WHERE created_at >= (CURRENT_TIMESTAMP - INTERVAL :days DAY) GROUP BY CAST(created_at AS DATE) ORDER BY date", nativeQuery = true)
+        List<Map<String, Object>> getQuestionTrend(@Param("days") int days);
 
         @Query(value = "SELECT delta, reason FROM Reputation_History " +
                         "WHERE user_id = :userId " +

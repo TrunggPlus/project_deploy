@@ -172,10 +172,7 @@ public class QuestionDetailServiceImpl implements QuestionDetailService {
 
     @Override
     public List<TrendingQuestionDTO> getTrendingQuestions(int limit) {
-        java.util.Calendar cal = java.util.Calendar.getInstance();
-        cal.add(java.util.Calendar.DAY_OF_YEAR, -7);
-        java.util.Date thresholdDate = cal.getTime();
-        List<Object[]> rows = questionRepository.findTrendingNative(thresholdDate, PageRequest.of(0, Math.max(1, limit)));
+        List<Object[]> rows = questionRepository.findTrendingNative(PageRequest.of(0, Math.max(1, limit)));
         List<TrendingQuestionDTO> result = new ArrayList<>();
         for (Object[] row : rows) {
             TrendingQuestionDTO dto = new TrendingQuestionDTO();

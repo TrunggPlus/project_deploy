@@ -48,7 +48,6 @@ MD_Requirement/
 application-secret.properties
 application-dev.properties
 application-local.properties
-application.properties
 .env
 *.env
 
@@ -57,8 +56,3 @@ application.properties
 logs/
 .DS_Store
 Thumbs.db
-
-# Dependencies & temporary files
-node_modules/
-.playwright-mcp/
-
