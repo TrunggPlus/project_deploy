@@ -17,7 +17,7 @@ public interface CollectionRepository extends JpaRepository<com.example.demo.ent
 
     @Modifying
     @Transactional
-    @Query(value = "INSERT INTO Collections (user_id, Name, CreatedAt) VALUES (:userId, :name, GETDATE())", nativeQuery = true)
+    @Query(value = "INSERT INTO Collections (user_id, Name, CreatedAt) VALUES (:userId, :name, CURRENT_TIMESTAMP)", nativeQuery = true)
     void createCollection(@Param("userId") long userId, @Param("name") String name);
 
     @Modifying

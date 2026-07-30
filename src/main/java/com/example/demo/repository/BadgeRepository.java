@@ -19,7 +19,7 @@ public interface BadgeRepository extends JpaRepository<Badge, Long> {
     @Modifying
     @Transactional
     @Query(value = "INSERT INTO User_Badges (user_id, badge_id, created_at) " +
-            "SELECT :userId, b.badge_id, GETDATE() " +
+            "SELECT :userId, b.badge_id, CURRENT_TIMESTAMP " +
             "FROM Badges b " +
             "WHERE b.required_reputation <= :reputation " +
             "AND NOT EXISTS (" +

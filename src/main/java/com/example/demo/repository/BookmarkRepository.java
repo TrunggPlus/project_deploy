@@ -47,6 +47,6 @@ public interface BookmarkRepository extends JpaRepository<com.example.demo.entit
 
     @Modifying
     @Transactional
-    @Query(value = "INSERT INTO Bookmarks (user_id, question_id, created_at) VALUES (:userId, :questionId, GETDATE())", nativeQuery = true)
+    @Query(value = "INSERT INTO Bookmarks (user_id, question_id, created_at) VALUES (:userId, :questionId, CURRENT_TIMESTAMP)", nativeQuery = true)
     void insertBookmark(@Param("userId") long userId, @Param("questionId") long questionId);
 }

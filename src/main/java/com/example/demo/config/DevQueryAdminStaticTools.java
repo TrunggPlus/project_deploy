@@ -20,7 +20,7 @@ public class DevQueryAdminStaticTools {
     public Object getGeneralUserStats() {
         try {
             String sql = "SELECT COUNT(*) AS TotalUsers, " +
-                    "SUM(CASE WHEN CAST(CreatedAt AS DATE) = CAST(GETDATE() AS DATE) THEN 1 ELSE 0 END) AS NewUsersToday "
+                    "SUM(CASE WHEN CAST(created_at AS DATE) = CURRENT_DATE() THEN 1 ELSE 0 END) AS NewUsersToday "
                     +
                     "FROM Users";
             return jdbcTemplate.queryForMap(sql);
@@ -32,11 +32,10 @@ public class DevQueryAdminStaticTools {
     @Tool(description = "Retrieves a list of the top 10 most recently banned users from the system, including the ban reason and timestamp. Useful for tracking moderation actions and penalized users.")
     public Object getRecentBannedUsers() {
         try {
-            // Using SQL Server 'TOP 10' syntax
-            String sql = "SELECT TOP 10 UserId, Username, BanReason, BannedAt " +
+            String sql = "SELECT user_id AS UserId, username AS Username, status " +
                     "FROM Users " +
-                    "WHERE IsBanned = 1 " +
-                    "ORDER BY BannedAt DESC";
+                    "WHERE status = 'banned' " +
+                    "ORDER BY created_at DESC LIMIT 10";
             return jdbcTemplate.queryForList(sql);
         } catch (DataAccessException e) {
             return "Error retrieving recent banned users. Please check the database connection.";
@@ -48,9 +47,9 @@ public class DevQueryAdminStaticTools {
     @Tool(description = "Retrieves the top 10 most frequently used programming tags in the forum. Useful for understanding what topics and technologies are currently popular or trending among developers.")
     public Object getTrendingTags() {
         try {
-            String sql = "SELECT TOP 10 TagId, TagName, UsageCount " +
+            String sql = "SELECT tag_id AS TagId, tag_name AS TagName " +
                     "FROM Tags " +
-                    "ORDER BY UsageCount DESC";
+                    "LIMIT 10";
             return jdbcTemplate.queryForList(sql);
         } catch (DataAccessException e) {
             return "Error retrieving trending tags from the database.";
@@ -62,10 +61,10 @@ public class DevQueryAdminStaticTools {
     @Tool(description = "Retrieves a list of unresolved user reports (e.g., spam, community guideline violations) that currently require administrator attention and resolution.")
     public Object getPendingReports() {
         try {
-            String sql = "SELECT ReportId, ReporterId, ReportedItemId, ReportType, Reason, CreatedAt " +
-                    "FROM Reports " +
-                    "WHERE Status = 'Pending' " +
-                    "ORDER BY CreatedAt ASC";
+            String sql = "SELECT report_id AS ReportId, reporter_id AS ReporterId, reported_item_id AS ReportedItemId, report_type AS ReportType, reason AS Reason, created_at AS CreatedAt " +
+                    "FROM Report " +
+                    "WHERE status = 'Pending' " +
+                    "ORDER BY created_at ASC";
             return jdbcTemplate.queryForList(sql);
         } catch (DataAccessException e) {
             return "Error retrieving pending reports. The reports table might be inaccessible.";
@@ -77,10 +76,9 @@ public class DevQueryAdminStaticTools {
     @Tool(description = "Retrieves the current list of active forum rules and their corresponding violation penalties. Useful for verifying community guidelines when moderating or answering questions.")
     public Object getForumRules() {
         try {
-            String sql = "SELECT RuleId, Title, Description, Penalty " +
-                    "FROM ForumRules " +
-                    "WHERE IsActive = 1 " +
-                    "ORDER BY RuleId ASC";
+            String sql = "SELECT rule_id AS RuleId, title AS Title, content AS Description " +
+                    "FROM Rule " +
+                    "ORDER BY rule_id ASC";
             return jdbcTemplate.queryForList(sql);
         } catch (DataAccessException e) {
             return "Error retrieving forum rules from the database.";
@@ -92,9 +90,9 @@ public class DevQueryAdminStaticTools {
     @Tool(description = "Retrieves a list of all available gamification badges in the system along with their criteria and required points. Useful for explaining to users how to earn specific achievements.")
     public Object getSystemBadges() {
         try {
-            String sql = "SELECT BadgeId, Name, Description, RequiredPoints " +
+            String sql = "SELECT badge_id AS BadgeId, name AS Name, description AS Description, required_reputation AS RequiredPoints " +
                     "FROM Badges " +
-                    "ORDER BY RequiredPoints ASC";
+                    "ORDER BY required_reputation ASC";
             return jdbcTemplate.queryForList(sql);
         } catch (DataAccessException e) {
             return "Error retrieving system badges. Gamification data is currently unavailable.";
@@ -106,10 +104,9 @@ public class DevQueryAdminStaticTools {
     @Tool(description = "Retrieves the top 5 most recently published blog posts authored by administrators or moderators. Useful for reviewing recent official announcements or articles.")
     public Object getRecentAdminBlogs() {
         try {
-            String sql = "SELECT TOP 5 BlogId, Title, AuthorId, PublishedAt " +
-                    "FROM Blogs " +
-                    "WHERE IsAdminPost = 1 " +
-                    "ORDER BY PublishedAt DESC";
+            String sql = "SELECT blog_id AS BlogId, title AS Title, author_id AS AuthorId, created_at AS PublishedAt " +
+                    "FROM Blog " +
+                    "ORDER BY created_at DESC LIMIT 5";
             return jdbcTemplate.queryForList(sql);
         } catch (DataAccessException e) {
             return "Error retrieving recent admin blogs.";
@@ -121,10 +118,9 @@ public class DevQueryAdminStaticTools {
     @Tool(description = "Retrieves a list of pending user feedbacks or feature requests submitted by community members that have not yet been addressed by the administration team.")
     public Object getUnresolvedFeedbacks() {
         try {
-            String sql = "SELECT FeedbackId, UserId, Subject, Content, SubmittedAt " +
-                    "FROM Feedbacks " +
-                    "WHERE Status = 'Unresolved' " +
-                    "ORDER BY SubmittedAt ASC";
+            String sql = "SELECT feedback_id AS FeedbackId, user_id AS UserId, content AS Content, created_at AS SubmittedAt " +
+                    "FROM Feedback " +
+                    "ORDER BY created_at ASC";
             return jdbcTemplate.queryForList(sql);
         } catch (DataAccessException e) {
             return "Error retrieving unresolved feedbacks from the database.";
