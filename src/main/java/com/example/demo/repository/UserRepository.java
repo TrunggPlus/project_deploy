@@ -283,14 +283,13 @@ public interface UserRepository extends JpaRepository<User, Long> {
         (SELECT COUNT(*) FROM User_Badges ub JOIN Badges b ON ub.badge_id = b.badge_id WHERE ub.user_id = u.user_id AND b.type = 'gold') AS goldBadges,
         (SELECT COUNT(*) FROM User_Badges ub JOIN Badges b ON ub.badge_id = b.badge_id WHERE ub.user_id = u.user_id AND b.type = 'silver') AS silverBadges,
         (SELECT COUNT(*) FROM User_Badges ub JOIN Badges b ON ub.badge_id = b.badge_id WHERE ub.user_id = u.user_id AND b.type = 'bronze') AS bronzeBadges,
-        COALESCE((SELECT SUM(CASE WHEN v.vote_type = 'up' THEN 1 WHEN v.vote_type = 'down' THEN -1 ELSE 0 END) FROM Votes v LEFT JOIN Questions q ON v.question_id = q.question_id LEFT JOIN Answers a ON v.answer_id = a.answer_id WHERE q.user_id = u.user_id OR a.user_id = u.user_id), 0) AS voteScore
+        COALESCE(u.Reputation, 0) AS voteScore
         FROM Users u LEFT JOIN User_Profile p ON u.user_id = p.user_id
-        WHERE u.role != 'admin' AND u.role != 'bot' AND u.user_id <> :currentUserId AND (:keyword IS NULL OR :keyword = '' OR u.username LIKE CONCAT('%', :keyword, '%'))
-        ORDER BY CASE WHEN :filter = 'reputation' THEN COALESCE(u.Reputation, 0) END DESC,
-        CASE WHEN :filter = 'voted' THEN COALESCE((SELECT SUM(CASE WHEN v.vote_type = 'up' THEN 1 WHEN v.vote_type = 'down' THEN -1 ELSE 0 END) FROM Votes v LEFT JOIN Questions q ON v.question_id = q.question_id LEFT JOIN Answers a ON v.answer_id = a.answer_id WHERE q.user_id = u.user_id OR a.user_id = u.user_id), 0) END DESC,
+        WHERE u.role != 'admin' AND u.role != 'bot' AND (:currentUserId IS NULL OR u.user_id <> :currentUserId) AND (:keyword IS NULL OR :keyword = '' OR u.username LIKE CONCAT('%', :keyword, '%'))
+        ORDER BY CASE WHEN :filter = 'reputation' OR :filter = 'voted' THEN COALESCE(u.Reputation, 0) END DESC,
         CASE WHEN :filter = 'new' THEN u.created_at END DESC, u.username ASC
         """, countQuery = """
-        SELECT COUNT(*) FROM Users u WHERE u.role != 'admin' AND u.role != 'bot' AND u.user_id <> :currentUserId AND (:keyword IS NULL OR :keyword = '' OR u.username LIKE CONCAT('%', :keyword, '%'))
+        SELECT COUNT(*) FROM Users u WHERE u.role != 'admin' AND u.role != 'bot' AND (:currentUserId IS NULL OR u.user_id <> :currentUserId) AND (:keyword IS NULL OR :keyword = '' OR u.username LIKE CONCAT('%', :keyword, '%'))
         """, nativeQuery = true)
         Page<UserPageDTO> findUsersForUserPage(@Param("keyword") String keyword, @Param("filter") String filter,@Param("currentUserId") Long currentUserId, Pageable pageable);
 }

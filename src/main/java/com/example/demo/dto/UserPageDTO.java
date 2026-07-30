@@ -22,5 +22,5 @@ public interface  UserPageDTO {
 
     String getBio();
 
-    Timestamp getCreatedAt();
+    Object getCreatedAt();
 }
