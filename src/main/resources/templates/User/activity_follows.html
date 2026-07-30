@@ -264,7 +264,7 @@
                                         th:text="${f.title}">Title</a>
                                     <div class="text-muted mt-1" style="font-size: 12px;">
                                         <i class="fa-solid fa-bookmark text-warning"></i> Saved on <span
-                                            th:text="${#dates.format(f.savedAt, 'MMM dd, yyyy')}">Date</span>
+                                            th:text="${f.savedAt != null ? (f.savedAt instanceof T(java.time.LocalDateTime) ? #temporals.format(f.savedAt, 'MMM dd, yyyy') : #dates.format(f.savedAt, 'MMM dd, yyyy')) : ''}">Date</span>
                                     </div>
                                 </div>
                             </div>

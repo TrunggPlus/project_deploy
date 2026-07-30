@@ -130,16 +130,17 @@ public interface UserRepository extends JpaRepository<User, Long> {
         // --- Activity Tab Queries ---
 
         @Query(value = "SELECT q.created_at FROM Questions q WHERE q.user_id = :userId AND q.created_at >= :thresholdDate ORDER BY q.created_at ASC", nativeQuery = true)
-        List<java.sql.Timestamp> getQuestionsCreatedAtList(@Param("userId") long userId, @Param("thresholdDate") java.util.Date thresholdDate);
+        List<Object> getQuestionsCreatedAtList(@Param("userId") long userId, @Param("thresholdDate") java.util.Date thresholdDate);
 
         default List<Map<String, Object>> getQuestionsActivityChart(long userId) {
             java.util.Calendar cal = java.util.Calendar.getInstance();
             cal.add(java.util.Calendar.MONTH, -6);
             java.util.Date thresholdDate = cal.getTime();
-            List<java.sql.Timestamp> dates = getQuestionsCreatedAtList(userId, thresholdDate);
+            List<Object> dates = getQuestionsCreatedAtList(userId, thresholdDate);
 
             java.util.Map<String, Integer> counts = new java.util.LinkedHashMap<>();
             java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("MMM yyyy", java.util.Locale.ENGLISH);
+            java.time.format.DateTimeFormatter dtf = java.time.format.DateTimeFormatter.ofPattern("MMM yyyy", java.util.Locale.ENGLISH);
             
             // Pre-populate last 6 months with 0
             java.util.Calendar tempCal = java.util.Calendar.getInstance();
@@ -149,10 +150,17 @@ public interface UserRepository extends JpaRepository<User, Long> {
                 tempCal.add(java.util.Calendar.MONTH, 1);
             }
             
-            for (java.sql.Timestamp ts : dates) {
-                if (ts != null) {
-                    String monthStr = sdf.format(ts);
-                    if (counts.containsKey(monthStr)) {
+            for (Object obj : dates) {
+                if (obj != null) {
+                    String monthStr = null;
+                    if (obj instanceof java.time.LocalDateTime ldt) {
+                        monthStr = ldt.format(dtf);
+                    } else if (obj instanceof java.sql.Timestamp ts) {
+                        monthStr = sdf.format(ts);
+                    } else if (obj instanceof java.util.Date d) {
+                        monthStr = sdf.format(d);
+                    }
+                    if (monthStr != null && counts.containsKey(monthStr)) {
                         counts.put(monthStr, counts.get(monthStr) + 1);
                     }
                 }
