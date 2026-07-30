@@ -111,7 +111,7 @@ public class QuestionRecommendationService {
         }
 
         StringBuilder sql = new StringBuilder();
-        sql.append("SELECT TOP (?) q.*, u.username, u.Reputation AS author_reputation, up.avatar_url, ")
+        sql.append("SELECT q.*, u.username, u.Reputation AS author_reputation, up.avatar_url, ")
                 .append("(SELECT COUNT(*) FROM Answers a WHERE a.question_id = q.question_id) as ans_count, ");
 
         List<String> scoreParts = new ArrayList<>();
@@ -169,10 +169,9 @@ public class QuestionRecommendationService {
         }
         sql.append(String.join(" OR ", matchParts))
                 .append(") ")
-                .append("ORDER BY recommendation_score DESC, q.view_count DESC, q.created_at DESC");
+                .append("ORDER BY recommendation_score DESC, q.view_count DESC, q.created_at DESC LIMIT ?");
 
         List<Object> params = new ArrayList<>();
-        params.add(limit);
 
         if (hasTags) {
             params.addAll(tags);
@@ -197,6 +196,7 @@ public class QuestionRecommendationService {
                 params.add(pattern);
             }
         }
+        params.add(limit);
 
         return jdbcTemplate.query(sql.toString(), (rs, rowNum) -> {
             QuestionDTO question = mapRow(rs);
