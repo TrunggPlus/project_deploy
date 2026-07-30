@@ -71,7 +71,7 @@ public class Question {
     private Long deletedBy;
 
     @Column(name = "is_draft")
-    private boolean isDraft;
+    private Boolean isDraft;
 
     public Question() {
     }
